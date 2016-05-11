@@ -1,18 +1,32 @@
 #You can use code you wrote for the correlation exercise here.
-source("ContinuousFunctions")
-tree <- read.tree("____PATH_TO_TREE_OR_SOME_OTHER_WAY_OF_GETTING_A_TREE____")
-discrete.data <- read.csv(file="____PATH_TO_DATA_OR_SOME_OTHER_WAY_OF_GETTING_TRAITS____", stringsAsFactors=FALSE) #death to factors.
-continuous.data <- read.csv(file="____PATH_TO_DATA_OR_SOME_OTHER_WAY_OF_GETTING_TRAITS____", stringsAsFactors=FALSE) #death to factors.
+source("C:\\Users\\JAL\\Desktop\\PhyloMeth\\ContinuousTraits\\ContinuousFunctions.R")
+phy <- get_study_tree("ot_485", "tree1")
 
-cleaned.continuous <- CleanData(tree, continuous.data)
-cleaned.discrete <- CleanData(tree, discrete.data)
-VisualizeData(tree, cleaned.continuous)
-VisualizeData(tree, cleaned.discrete)
+continuoustrait1 <- sim.char (phy,0.3, 1, model="BM")
+taxa.count <- length(continuoustrait1)
+print(paste("number of taxa = ", taxa.count))
+cleaned.continuous1 <- CleanData(phy, continuoustrait1)
+data <- cleaned.continuous1$data
+VisualizeData(phy, data)
+name.check(phy,data)
+
+angi.trait <- as.vector(read.csv(file="C:\\Users\\JAL\\Desktop\\PhyloMeth\\angitrait.csv",header=F)[,1])
+#angi.trait, I coded 0 to be non-angiosperm, and 1 to be angiosperm-JL.
+
+ouwie.matrix <- matrix(data=NA, nrow=taxa.count, ncol=3)
+colnames(ouwie.matrix) <- c("Var1", "Var2", "Var3")
+ouwie.matrix [,1] <- rownames(continuoustrait1)
+ouwie.matrix [,2] <- angi.trait
+ouwie.matrix [,3] <- as.vector(as.data.frame(continuoustrait1)[,1])
 
 #First, start basic. What is the rate of evolution of your trait on the tree? 
 
-BM1 <- fitContinuous(tree, cleaned.continuous, model="BM")
-print(paste("The rate of evolution is", _____, "in units of", _______))
+BM1 <- fitContinuous(phy, cleaned.continuous1, model="BM")
+BM1 <- fitContinuous(phy, data, model="BM")
+q<-ratematrix(phy, data)
+
+print(paste("The rate of evolution is", BM1$beta, "in units of", 
+            "variance of phenotypic change/time"))
 #Important: What are the rates of evolution? In what units?
 
 
@@ -24,7 +38,7 @@ print(paste("The rate of evolution is", _____, "in units of", _______))
 #performing a thorough numerical search. It took you 3+ years
 #to get the data, may as well take an extra five minutes to 
 #get an accurate answer
-nodeBased.OUMV <- OUwie(tree,trait,model="OUMV", simmap.tree=FALSE, diagn=FALSE)
+nodeBased.OUMV <- OUwie(phy,ouwie.matrix[,2], model="OUMV", simmap.tree=FALSE, diagn=FALSE)
 print(nodeBased.OUMV)
 #What do the numbers mean?
 
